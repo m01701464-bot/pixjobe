@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>База клиентов</title>
+<style>
+:root{
+  --bg:#eef0f3; --card:#ffffff; --ink:#16202c; --muted:#677382; --line:#dde1e7;
+  --navy:#1f3a5f; --amber:#f4b740; --green:#1f8a5b; --red:#c2413b; --blue:#2f6fd6;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--navy);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:18px;font-weight:700}
+header p{margin:2px 0 0;font-size:13px;color:#b9c6d6}
+main{padding:12px 12px 90px}
+.tab{display:none}.tab.on{display:block}
+nav.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);z-index:6;padding-bottom:env(safe-area-inset-bottom,0)}
+nav.bar button{background:none;border:0;padding:10px 0 12px;font-size:13px;color:var(--muted);display:grid;justify-items:center;gap:2px}
+nav.bar button b{font-size:18px;line-height:1}
+nav.bar button.on{color:var(--navy);font-weight:600}
+.box{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.box h2{margin:0 0 10px;font-size:15px}
+.lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font-size:14px}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:9px 4px;font-size:14px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--navy);color:#fff}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.switch{display:flex;align-items:center;gap:10px;font-size:14px}
+.switch input{width:20px;height:20px;accent-color:var(--navy)}
+.big{width:100%;border:0;border-radius:10px;background:var(--amber);color:#2a1c00;font-weight:700;padding:14px;font-size:16px}
+.big:disabled{opacity:.5}
+.ghost{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px}
+.hint{font-size:13px;color:var(--muted);margin:8px 0 0}
+.log{font-size:13px;color:var(--muted);white-space:pre-line;max-height:180px;overflow:auto;margin-top:10px}
+input[type=text],input[type=password],input[type=date],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:10px 12px}
+textarea{min-height:90px;resize:vertical}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stats div{background:var(--card);border-radius:var(--r);padding:10px 12px}
+.stats b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--muted)}
+.filters{display:grid;gap:8px;margin-bottom:12px}
+.filters .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lead{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;border-left:4px solid var(--line)}
+.lead[data-st="interest"]{border-left-color:var(--green)}
+.lead[data-st="callback"],.lead[data-st="sent"]{border-left-color:var(--amber)}
+.lead[data-st="refuse"]{border-left-color:var(--red);opacity:.7}
+.lead[data-st="client"]{border-left-color:var(--blue)}
+.lead h3{margin:0;font-size:16px}
+.meta{font-size:13px;color:var(--muted);margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tag{font-size:12px;padding:2px 8px;border-radius:6px;background:#eef1f5;color:var(--muted)}
+.tag.hot{background:#fff1d6;color:#8a5a00;font-weight:600}
+.tag.no{background:#fde8e6;color:#9b2f29;font-weight:600}
+.tag.soc{background:#e8eefc;color:#2a55a8;font-weight:600}
+.tag.due{background:#e3f5ec;color:#16704a;font-weight:600}
+.phone{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;margin:6px 0 10px}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.acts button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 4px;font-size:14px}
+.acts .call{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+.acts .wa{color:#16704a;font-weight:600}
+.more{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.more textarea{grid-column:1/-1;min-height:56px}
+.empty{text-align:center;color:var(--muted);padding:40px 16px}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;max-width:90%;z-index:9;display:none}
+.steps{margin:0;padding-left:20px;font-size:14px}
+.steps li{margin-bottom:6px}
+code{background:#eef1f5;padding:1px 5px;border-radius:4px;font-size:13px}
+</style>
+</head>
+<body>
+<header><h1>База клиентов</h1><p id="sub">Бизнесы Шымкента без сайта</p></header>
+
+<main>
+<!-- ПОИСК -->
+<section class="tab on" id="t-search">
+  <div class="box">
+    <p class="lbl">Что ищем</p>
+    <div class="chips" id="cats"></div>
+  </div>
+  <div class="box">
+    <p class="lbl">Источник</p>
+    <div class="seg" id="src">
+      <button data-v="osm" class="on">OpenStreetMap</button>
+      <button data-v="google">Google Maps</button>
+    </div>
+    <p class="hint" id="srcHint"></p>
+    <div style="margin-top:12px" id="distWrap">
+      <label class="switch"><input type="checkbox" id="dist">Искать отдельно по 5 районам (больше результатов)</label>
+    </div>
+  </div>
+  <button class="big" id="go">Найти</button>
+  <div class="log" id="log"></div>
+</section>
+
+<!-- БАЗА -->
+<section class="tab" id="t-base">
+  <div class="stats">
+    <div><b id="sAll">0</b><span>в базе</span></div>
+    <div><b id="sNo">0</b><span>без сайта</span></div>
+    <div><b id="sDue">0</b><span>перезвонить</span></div>
+  </div>
+  <div class="filters">
+    <div class="seg" id="fSite">
+      <button data-v="lead" class="on">Нет сайта</button>
+      <button data-v="site">С сайтом</button>
+      <button data-v="all">Все</button>
+    </div>
+    <div class="two">
+      <select id="fStatus" aria-label="Статус"></select>
+      <select id="fCat" aria-label="Категория"></select>
+    </div>
+    <div class="two">
+      <input type="text" id="fText" placeholder="Поиск по названию">
+      <select id="fSort" aria-label="Сортировка">
+        <option value="pop">Сначала популярные</option>
+        <option value="due">Сначала перезвонить</option>
+        <option value="new">Сначала новые</option>
+        <option value="name">По названию</option>
+      </select>
+    </div>
+  </div>
+  <div id="list"></div>
+  <button class="ghost" id="export" style="width:100%;margin-top:4px">Выгрузить таблицу (CSV)</button>
+</section>
+
+<!-- НАСТРОЙКИ -->
+<section class="tab" id="t-set">
+  <div class="box">
+    <h2>Сообщение для WhatsApp</h2>
+    <textarea id="tpl"></textarea>
+    <p class="hint">Подставится само: <code>{название}</code>, <code>{категория}</code>, <code>{имя}</code>, <code>{портфолио}</code>.</p>
+    <div style="display:grid;gap:8px;margin-top:10px">
+      <input type="text" id="myName" placeholder="Твоё имя">
+      <input type="text" id="portfolio" placeholder="Ссылка на пример сайта">
+    </div>
+  </div>
+  <div class="box">
+    <h2>Ключ Google Maps</h2>
+    <input type="password" id="gkey" placeholder="AIza...">
+    <ol class="steps hint">
+      <li>Открой <b>console.cloud.google.com</b> и создай проект.</li>
+      <li>Привяжи платёжный аккаунт. Карта нужна для проверки, но небольшой объём поиска бесплатный каждый месяц.</li>
+      <li>В «APIs &amp; Services → Library» включи <b>Places API (New)</b>.</li>
+      <li>В «Credentials» нажми «Create credentials → API key», скопируй ключ сюда.</li>
+      <li>В настройках ключа ограничь его только Places API, чтобы им не воспользовались другие.</li>
+    </ol>
+    <p class="hint">Запросов к Google в этом месяце: <b id="gcount">0</b>. Один поиск по одной категории тратит 1–3 запроса, по районам до 15.</p>
+  </div>
+  <div class="box">
+    <h2>Данные</h2>
+    <p class="hint" style="margin:0 0 10px">База хранится только на этом телефоне.</p>
+    <button class="ghost" id="wipe" style="color:var(--red);width:100%">Очистить всю базу</button>
+  </div>
+</section>
+</main>
+
+<nav class="bar">
+  <button data-t="search" class="on"><b>⌕</b>Поиск</button>
+  <button data-t="base"><b>☰</b>База</button>
+  <button data-t="set"><b>⚙</b>Настройки</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+/* ---------- данные ---------- */
+const CITY = 'Шымкент';
+const BBOX = {s:42.20, w:69.42, n:42.48, e:69.85};
+const DISTRICTS = ['Абайский район','Аль-Фарабийский район','Енбекшинский район','Каратауский район','Туран район'];
+const CATS = [
+  {id:'detail', name:'Детейлинг и мойки', osm:['amenity=car_wash','craft=car_detailing'], q:['детейлинг','автомойка']},
+  {id:'auto',   name:'Автосервисы',       osm:['shop=car_repair','shop=tyres'],            q:['автосервис','шиномонтаж']},
+  {id:'barber', name:'Барбершопы',        osm:['shop=hairdresser'],                         q:['барбершоп']},
+  {id:'beauty', name:'Салоны красоты',    osm:['shop=beauty'],                              q:['салон красоты','ногтевая студия']},
+  {id:'dental', name:'Стоматологии',      osm:['amenity=dentist','healthcare=dentist'],     q:['стоматология']},
+  {id:'food',   name:'Кафе и рестораны',  osm:['amenity=cafe','amenity=restaurant'],        q:['кафе','ресторан']},
+  {id:'fitness',name:'Фитнес',            osm:['leisure=fitness_centre'],                   q:['фитнес клуб']},
+  {id:'edu',    name:'Учебные центры',    osm:['amenity=language_school','amenity=driving_school'], q:['учебный центр','автошкола']},
+];
+const STATUSES = [
+  ['new','Новый'],['noanswer','Не дозвонился'],['callback','Перезвонить'],['sent','Отправил пример'],
+  ['interest','Интерес'],['refuse','Отказ'],['client','Клиент']
+];
+const SOCIAL = /(instagram\.com|wa\.me|whatsapp|2gis\.|taplink|facebook\.com|t\.me|vk\.com|tiktok\.com|linktr\.ee|ok\.ru|youtube\.com)/i;
+const DEFAULT_TPL = 'Здравствуйте! Меня зовут {имя}, я делаю сайты для бизнеса в Шымкенте. Сделал пример сайта для {категория}: клиент видит цены и сразу записывается. Можно скину посмотреть?\n{портфолио}';
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v) }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){ toast('Не удалось сохранить') } }
+};
+let leads = store.get('leads', {});
+let settings = Object.assign({tpl:DEFAULT_TPL, name:'', portfolio:'', gkey:'', gmonth:'', gcount:0}, store.get('settings', {}));
+let picked = new Set(store.get('picked', ['detail','barber']));
+let source = store.get('source', 'osm');
+const save = () => store.set('leads', leads);
+const saveSettings = () => store.set('settings', settings);
+
+/* ---------- утилиты ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 2600); }
+window.toast = toast;
+function log(msg){ const l = $('#log'); l.textContent += (l.textContent ? '\n' : '') + msg; l.scrollTop = l.scrollHeight; }
+
+function normPhone(raw){
+  if(!raw) return '';
+  let d = String(raw).split(/[;,/]/)[0].replace(/\D/g, '');
+  if(d.length === 11 && d[0] === '8') d = '7' + d.slice(1);
+  if(d.length === 10) d = '7' + d;
+  return d.length === 11 && d[0] === '7' ? d : '';
+}
+const isMobile = d => d && d[1] === '7';          // +7 7xx = мобильный в Казахстане
+const fmtPhone = d => d ? `+7 ${d.slice(1,4)} ${d.slice(4,7)} ${d.slice(7,9)} ${d.slice(9)}` : '';
+function siteKind(url){ if(!url) return 'none'; return SOCIAL.test(url) ? 'social' : 'site'; }
+
+/* ---------- сеть: через Android, иначе обычный fetch ---------- */
+const pending = {};
+window.__nativeReply = (cb, ok, status, body) => { const p = pending[cb]; if(p){ delete pending[cb]; p({ok, status, body}); } };
+function request(method, url, headers = {}, body = ''){
+  if(window.Native && Native.request){
+    return new Promise(res => { const cb = 'r' + Math.random().toString(36).slice(2); pending[cb] = res; Native.request(cb, method, url, JSON.stringify(headers), body); });
+  }
+  return fetch(url, {method, headers, body: body || undefined})
+    .then(async r => ({ok:r.ok, status:r.status, body: await r.text()}))
+    .catch(e => ({ok:false, status:0, body:String(e)}));
+}
+
+/* ---------- OpenStreetMap ---------- */
+async function searchOSM(cat){
+  const b = `${BBOX.s},${BBOX.w},${BBOX.n},${BBOX.e}`;
+  const parts = cat.osm.map(t => { const [k,v] = t.split('='); return `nwr["${k}"="${v}"](${b});`; }).join('');
+  const q = `[out:json][timeout:60];(${parts});out center tags;`;
+  const r = await request('POST', 'https://overpass-api.de/api/interpreter', {'Content-Type':'application/x-www-form-urlencoded'}, 'data=' + encodeURIComponent(q));
+  if(!r.ok) throw new Error(r.status === 429 ? 'OpenStreetMap просит подождать минуту' : 'Ошибка OpenStreetMap ' + r.status);
+  const els = JSON.parse(r.body).elements || [];
+  return els.map(e => {
+    const t = e.tags || {};
+    const site = t.website || t['contact:website'] || t.url || t['contact:instagram'] || t['contact:facebook'] || '';
+    const addr = [t['addr:street'], t['addr:housenumber']].filter(Boolean).join(', ');
+    const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
+    return {
+      id: `osm:${e.type}/${e.id}`, src:'OSM', name: t.name || t['name:ru'] || '', cat: cat.id,
+      addr, phone: normPhone(t.phone || t['contact:phone'] || t['contact:mobile'] || t['contact:whatsapp']),
+      site, rating: null, reviews: 0,
+      map: lat ? `https://2gis.kz/shymkent/geo/${lon},${lat}` : ''
+    };
+  }).filter(x => x.name);
+}
+
+/* ---------- Google Places (New) ---------- */
+function countGoogle(){
+  const m = today().slice(0,7);
+  if(settings.gmonth !== m){ settings.gmonth = m; settings.gcount = 0; }
+  settings.gcount++; saveSettings(); $('#gcount').textContent = settings.gcount;
+}
+async function searchGoogle(cat, useDistricts){
+  if(!settings.gkey) throw new Error('Вставь ключ Google в настройках');
+  const areas = useDistricts ? DISTRICTS.map(d => `${d} ${CITY}`) : [CITY];
+  const out = [];
+  for(const q0 of cat.q){
+    for(const area of areas){
+      let token = '', page = 0;
+      do{
+        const body = {textQuery:`${q0} ${area}`, languageCode:'ru', regionCode:'KZ', pageSize:20,
+          locationRestriction:{rectangle:{low:{latitude:BBOX.s, longitude:BBOX.w}, high:{latitude:BBOX.n, longitude:BBOX.e}}}};
+        if(token) body.pageToken = token;
+        const r = await request('POST', 'https://places.googleapis.com/v1/places:searchText', {
+          'Content-Type':'application/json', 'X-Goog-Api-Key': settings.gkey,
+          'X-Goog-FieldMask':'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.internationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,places.googleMapsUri,places.businessStatus,nextPageToken'
+        }, JSON.stringify(body));
+        countGoogle();
+        if(!r.ok){
+          let m = 'Ошибка Google ' + r.status;
+          try{ m += ': ' + JSON.parse(r.body).error.message }catch(e){}
+          throw new Error(m);
+        }
+        const j = JSON.parse(r.body);
+        (j.places || []).forEach(p => {
+          if(p.businessStatus && p.businessStatus !== 'OPERATIONAL') return;
+          out.push({
+            id:'g:' + p.id, src:'Google', name:p.displayName?.text || '', cat:cat.id,
+            addr:(p.formattedAddress || '').replace(/,?\s*Казахстан$/,'').replace(/,?\s*\d{6}$/,''),
+            phone:normPhone(p.internationalPhoneNumber || p.nationalPhoneNumber),
+            site:p.websiteUri || '', rating:p.rating ?? null, reviews:p.userRatingCount || 0, map:p.googleMapsUri || ''
+          });
+        });
+        token = j.nextPageToken || ''; page++;
+        if(token) await sleep(1200);
+      } while(token && page < 3);
+    }
+  }
+  return out;
+}
+
+/* ---------- слияние в базу ---------- */
+function merge(found){
+  let added = 0, updated = 0;
+  const byPhone = {};
+  Object.values(leads).forEach(l => { if(l.phone) byPhone[l.phone] = l.id; });
+  for(const f of found){
+    const existingId = leads[f.id] ? f.id : (f.phone && byPhone[f.phone]);
+    if(existingId){
+      const l = leads[existingId];
+      // свежие данные дописываем, свои пометки не трогаем
+      ['addr','site','map'].forEach(k => { if(f[k] && !l[k]) l[k] = f[k]; });
+      if(f.reviews > (l.reviews || 0)){ l.reviews = f.reviews; l.rating = f.rating; }
+      if(f.phone && !l.phone) l.phone = f.phone;
+      updated++;
+    } else {
+      leads[f.id] = Object.assign(f, {status:'new', note:'', next:'', added:Date.now()});
+      if(f.phone) byPhone[f.phone] = f.id;
+      added++;
+    }
+  }
+  save();
+  return {added, updated};
+}
+
+/* ---------- поиск ---------- */
+let busy = false;
+async function runSearch(){
+  if(busy) return;
+  if(!picked.size){ toast('Выбери хотя бы одну категорию'); return; }
+  busy = true; $('#go').disabled = true; $('#go').textContent = 'Ищу…'; $('#log').textContent = '';
+  const useDist = $('#dist').checked;
+  let total = {added:0, updated:0, noPhone:0, noSite:0};
+  for(const cat of CATS.filter(c => picked.has(c.id))){
+    log(`${cat.name}: ищу…`);
+    try{
+      const found = source === 'google' ? await searchGoogle(cat, useDist) : await searchOSM(cat);
+      const withPhone = found.filter(f => f.phone);
+      const leadsOnly = withPhone.filter(f => siteKind(f.site) !== 'site').length;
+      total.noPhone += found.length - withPhone.length;
+      total.noSite += leadsOnly;
+      const r = merge(withPhone);
+      total.added += r.added; total.updated += r.updated;
+      log(`${cat.name}: найдено ${found.length}, с телефоном ${withPhone.length}, без сайта ${leadsOnly}. Новых в базе: ${r.added}.`);
+      if(source === 'osm') await sleep(1500);
+    }catch(e){ log(`${cat.name}: ${e.message}`); if(/ключ|403|API key/i.test(e.message)) break; }
+  }
+  log(`\nГотово. Новых контактов: ${total.added}.` + (total.noPhone ? ` Без телефона пропущено: ${total.noPhone}.` : ''));
+  busy = false; $('#go').disabled = false; $('#go').textContent = 'Найти';
+  renderBase();
+  if(total.added) toast(`Добавлено ${total.added} контактов`);
+}
+
+/* ---------- база ---------- */
+let fSite = 'lead';
+function catName(id){ return CATS.find(c => c.id === id)?.name || ''; }
+function renderBase(){
+  const all = Object.values(leads);
+  const isLead = l => siteKind(l.site) !== 'site';
+  const due = l => l.next && l.next <= today() && !['refuse','client'].includes(l.status);
+  $('#sAll').textContent = all.length;
+  $('#sNo').textContent = all.filter(isLead).length;
+  $('#sDue').textContent = all.filter(due).length;
+  $('#sub').textContent = `${all.filter(isLead).length} без сайта · ${all.filter(due).length} перезвонить сегодня`;
+
+  const st = $('#fStatus').value, cat = $('#fCat').value, txt = $('#fText').value.trim().toLowerCase(), sort = $('#fSort').value;
+  let list = all.filter(l =>
+    (fSite === 'all' || (fSite === 'lead' ? isLead(l) : !isLead(l))) &&
+    (st === 'any' ? true : st === 'due' ? due(l) : st === 'open' ? !['refuse','client'].includes(l.status) : l.status === st) &&
+    (cat === 'any' || l.cat === cat) &&
+    (!txt || l.name.toLowerCase().includes(txt)));
+  const sorters = {
+    pop:(a,b) => (b.reviews||0) - (a.reviews||0),
+    due:(a,b) => (due(b) - due(a)) || (a.next||'9').localeCompare(b.next||'9'),
+    new:(a,b) => b.added - a.added,
+    name:(a,b) => a.name.localeCompare(b.name,'ru')
+  };
+  list.sort(sorters[sort]);
+  const box = $('#list');
+  if(!all.length){ box.innerHTML = '<div class="empty"><b>База пока пустая</b>Открой «Поиск», выбери категории и нажми «Найти».</div>'; return; }
+  if(!list.length){ box.innerHTML = '<div class="empty"><b>Ничего не найдено</b>Попробуй убрать фильтры.</div>'; return; }
+  const shown = list.slice(0, 200);
+  box.innerHTML = shown.map(l => {
+    const k = siteKind(l.site);
+    const tags = [
+      k === 'none' ? '<span class="tag no">нет сайта</span>' : k === 'social' ? `<span class="tag soc">только ${esc(socialName(l.site))}</span>` : '<span class="tag">есть сайт</span>',
+      l.reviews >= 50 ? `<span class="tag hot">★ ${l.rating ?? ''} · ${l.reviews} отзывов</span>` : l.reviews ? `<span class="tag">★ ${l.rating ?? ''} · ${l.reviews}</span>` : '',
+      due(l) ? '<span class="tag due">перезвонить сегодня</span>' : '',
+      `<span class="tag">${esc(catName(l.cat))}</span>`
+    ].join('');
+    return `<article class="lead" data-id="${esc(l.id)}" data-st="${l.status}">
+      <h3>${esc(l.name)}</h3>
+      <div class="meta">${esc(l.addr || 'адрес не указан')} · ${l.src}</div>
+      <div class="tags">${tags}</div>
+      <div class="phone">${fmtPhone(l.phone)}</div>
+      <div class="acts">
+        <button class="call" data-a="call">Позвонить</button>
+        <button class="wa" data-a="wa" ${isMobile(l.phone) ? '' : 'disabled title="Городской номер"'}>WhatsApp</button>
+        <button data-a="map" ${l.map || l.site ? '' : 'disabled'}>${l.site && k !== 'none' ? 'Открыть' : 'Карта'}</button>
+      </div>
+      <div class="more">
+        <select data-f="status">${STATUSES.map(([v,n]) => `<option value="${v}" ${v === l.status ? 'selected' : ''}>${n}</option>`).join('')}</select>
+        <input type="date" data-f="next" value="${esc(l.next)}" aria-label="Когда перезвонить">
+        <textarea data-f="note" placeholder="Заметка: с кем говорил, что ответили">${esc(l.note)}</textarea>
+      </div>
+    </article>`;
+  }).join('') + (list.length > 200 ? `<p class="hint" style="text-align:center">Показаны первые 200 из ${list.length}. Уточни фильтры.</p>` : '');
+}
+function socialName(u){ return /instagram/i.test(u) ? 'Instagram' : /wa\.me|whatsapp/i.test(u) ? 'WhatsApp' : /2gis/i.test(u) ? '2ГИС' : /t\.me/i.test(u) ? 'Telegram' : /taplink/i.test(u) ? 'Taplink' : 'соцсети'; }
+
+function messageFor(l){
+  const catWord = {detail:'детейлинга',auto:'автосервиса',barber:'барбершопа',beauty:'салона красоты',dental:'стоматологии',food:'кафе',fitness:'фитнес-клуба',edu:'учебного центра'}[l.cat] || 'бизнеса';
+  return settings.tpl.replaceAll('{название}', l.name).replaceAll('{категория}', catWord)
+    .replaceAll('{имя}', settings.name || 'Ярослав').replaceAll('{портфолио}', settings.portfolio || '').trim();
+}
+function openUrl(u){ if(window.Native && Native.open) Native.open(u); else window.open(u, '_blank'); }
+
+$('#list').addEventListener('click', e => {
+  const b = e.target.closest('button[data-a]'); if(!b) return;
+  const l = leads[b.closest('.lead').dataset.id]; if(!l) return;
+  if(b.dataset.a === 'call'){
+    if(window.Native && Native.dial) Native.dial('+' + l.phone); else location.href = 'tel:+' + l.phone;
+    if(l.status === 'new'){ l.status = 'noanswer'; save(); setTimeout(renderBase, 400); }
+  }
+  if(b.dataset.a === 'wa') openUrl(`https://wa.me/${l.phone}?text=${encodeURIComponent(messageFor(l))}`);
+  if(b.dataset.a === 'map') openUrl(siteKind(l.site) !== 'none' && l.site ? (/^https?:/.test(l.site) ? l.site : 'https://' + l.site.replace(/^@/, 'instagram.com/')) : l.map);
+});
+$('#list').addEventListener('change', e => {
+  const f = e.target.dataset.f; if(!f) return;
+  const l = leads[e.target.closest('.lead').dataset.id]; if(!l) return;
+  l[f] = e.target.value;
+  if(f === 'status' && e.target.value === 'callback' && !l.next){
+    const d = new Date(); d.setDate(d.getDate() + 2); l.next = d.toISOString().slice(0,10);
+  }
+  save();
+  if(f !== 'note') renderBase(); else toast('Заметка сохранена');
+});
+
+/* ---------- выгрузка ---------- */
+$('#export').onclick = () => {
+  const rows = [['Название','Категория','Телефон','Адрес','Сайт/соцсети','Рейтинг','Отзывов','Статус','Перезвонить','Заметка','Источник']];
+  const stName = Object.fromEntries(STATUSES);
+  Object.values(leads).sort((a,b) => (b.reviews||0) - (a.reviews||0)).forEach(l => rows.push([
+    l.name, catName(l.cat), fmtPhone(l.phone), l.addr, l.site, l.rating ?? '', l.reviews || '', stName[l.status], l.next, l.note, l.src]));
+  const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const name = `baza-${today()}.csv`;
+  if(window.Native && Native.shareFile) Native.shareFile(name, csv);
+  else { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], {type:'text/csv'})); a.download = name; a.click(); }
+};
+
+/* ---------- интерфейс ---------- */
+function renderCats(){
+  $('#cats').innerHTML = CATS.map(c => `<button class="chip ${picked.has(c.id) ? 'on' : ''}" data-c="${c.id}">${c.name}</button>`).join('');
+}
+$('#cats').onclick = e => {
+  const b = e.target.closest('[data-c]'); if(!b) return;
+  picked.has(b.dataset.c) ? picked.delete(b.dataset.c) : picked.add(b.dataset.c);
+  store.set('picked', [...picked]); renderCats();
+};
+function renderSrc(){
+  document.querySelectorAll('#src button').forEach(b => b.classList.toggle('on', b.dataset.v === source));
+  $('#distWrap').hidden = source !== 'google';
+  $('#srcHint').innerHTML = source === 'google'
+    ? (settings.gkey ? 'Полные данные: телефоны, рейтинг, число отзывов.' : 'Нужен ключ Google, вставь его во вкладке «Настройки».')
+    : 'Бесплатно и без ключа. В Шымкенте у части бизнесов нет телефона на карте, они будут пропущены.';
+}
+$('#src').onclick = e => { const b = e.target.closest('button'); if(!b) return; source = b.dataset.v; store.set('source', source); renderSrc(); };
+$('#fSite').onclick = e => { const b = e.target.closest('button'); if(!b) return; fSite = b.dataset.v; document.querySelectorAll('#fSite button').forEach(x => x.classList.toggle('on', x === b)); renderBase(); };
+$('#fStatus').innerHTML = '<option value="open">Все в работе</option><option value="due">Перезвонить сегодня</option><option value="any">Все статусы</option>' + STATUSES.map(([v,n]) => `<option value="${v}">${n}</option>`).join('');
+$('#fCat').innerHTML = '<option value="any">Все категории</option>' + CATS.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+['#fStatus','#fCat','#fSort'].forEach(s => $(s).onchange = renderBase);
+$('#fText').oninput = renderBase;
+$('#go').onclick = runSearch;
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 't-' + t));
+  document.querySelectorAll('nav.bar button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  if(t === 'base') renderBase();
+  window.scrollTo(0,0);
+}
+document.querySelector('nav.bar').onclick = e => { const b = e.target.closest('button'); if(b) showTab(b.dataset.t); };
+window.onBack = () => { if(!$('#t-search').classList.contains('on')){ showTab('search'); return true; } return false; };
+
+/* настройки */
+$('#tpl').value = settings.tpl; $('#myName').value = settings.name; $('#portfolio').value = settings.portfolio; $('#gkey').value = settings.gkey;
+$('#gcount').textContent = settings.gmonth === today().slice(0,7) ? settings.gcount : 0;
+[['#tpl','tpl'],['#myName','name'],['#portfolio','portfolio'],['#gkey','gkey']].forEach(([s,k]) =>
+  $(s).onchange = () => { settings[k] = $(s).value.trim() || (k === 'tpl' ? DEFAULT_TPL : ''); saveSettings(); renderSrc(); toast('Сохранено'); });
+let wipeArmed = false;
+$('#wipe').onclick = () => {
+  if(!wipeArmed){ wipeArmed = true; $('#wipe').textContent = 'Нажми ещё раз, чтобы удалить всё'; setTimeout(() => { wipeArmed = false; $('#wipe').textContent = 'Очистить всю базу'; }, 4000); return; }
+  leads = {}; save(); wipeArmed = false; $('#wipe').textContent = 'Очистить всю базу'; renderBase(); toast('База очищена');
+};
+
+renderCats(); renderSrc(); renderBase();
+</script>
+</body>
+</html>
